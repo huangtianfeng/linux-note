@@ -831,3 +831,32 @@ Do you really want to reduce test/testlv? [y/n]: y
 写到这里，lvm就讲的差不多了！想到再补充！
 
 休息了！写博客着实挺累的！
+
+
+
+最后附带几个脚本练习：
+
+1：编写脚本计算/etc/paswwd文件中第10个用户和第20个用户id号之和
+
+```shell
+[root@localhost scripts]# cat sum.sh
+#!/bin/bash
+id1=$(head -n 10 /etc/passwd | tail -n 1 | cut -d: -f3)
+id2=$(head -n 20 /etc/passwd | tail -n 1 | cut -d: -f3)
+let sum=$id1+$id2
+echo "$id1+$id2=$sum"
+```
+
+2： 编写脚本，通过命令行参数，传入一个用户名，判断id号是技术还是偶数
+
+```shell
+[root@localhost scripts]# cat test.sh 
+#!/bin/bash
+id=$(grep ^$1: /etc/passwd  | cut -d: -f3)
+let i=id%2
+if [[ $i -eq 1 ]];then
+	echo id is odd number
+	else 
+	echo id is even number
+fi
+```
