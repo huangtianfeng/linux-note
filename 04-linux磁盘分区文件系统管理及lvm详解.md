@@ -54,7 +54,7 @@ change time 表示的则是最近更改元数据的时间，该时间不允许�
 
 ![软链接和硬连接](F:\Users\tian\Pictures\linux图库\软链接和硬连接.png)
 
-这个图的硬链接应该是指向inode，这里说明一下，懒得改了！
+这个图的硬链接应该是指向inode，这里说明一下，有时间再来改一下！
 
 软链接文件的inode中，存放数据块指针的位置，存放的是一个路径，当源文件被删除时，软链接即失效，但是如果创建另外一个和该路劲同名的文件，那么这个软链接又将重新生效
 
@@ -68,7 +68,7 @@ change time 表示的则是最近更改元数据的时间，该时间不允许�
 
 
 
-## 磁盘的相关操作
+# 磁盘的相关操作
 
 ## 磁盘分区
 
@@ -465,3 +465,369 @@ NAME      TYPE       SIZE USED PRIO
 
 如上所示，分区完毕后，别忘记执行两次partx -a 使内核识别新分区，然后格式化，最后启用
 
+## GPT和MBR磁盘分区表！
+
+### MBR（MS-DOS）分区表
+
+MBR；master boot record 
+
+它使用磁盘的第一个扇区（512字节）来存放主引导程序和记录分区表信息
+
+主引导程序，占据该扇区的446个字节，系统启动的必备程序之一！ 往后会介绍到的，在这里有个概念就好；
+
+分区表信息：占据该扇区的64个字节！ 这64个字节，分为四组，能够记录四组分区信息，这也是为什么使用mbr分区表分区的磁盘，最多只能拥有四个主分区的原因，并且，由于每组仅有16个字节记录分区信息，所以，单块磁盘的容量也被限制在2.2TB 左右！  
+
+扩展分区：所谓扩展分区，只是指定 一个范围，它会在扩展分区指定的范围内找到另一个位置，用来存放分区信息，而后，我们就可以在这个扩展分区中，创建所谓的逻辑分区了！ 这个逻辑分区的分区信息，就保存在该扩展分区中的！ 并不是直接保存在磁盘的第一个扇区的分区表中！ 
+
+**总结一下mbr磁盘分区的特性：**
+
+**磁盘默认的分区表仅能记录四组分区信息**
+
+**分区的最小单位是柱面**
+
+**单个磁盘最大容量2.2TB**
+
+**MBR仅有一个用来存放分区信息的扇区，如果损坏，很难恢复**
+
+### GPT分区表
+
+GPT：GUID partition table
+
+gpt磁盘分区表，将整个磁盘以LBA（logical block address，逻辑区块地址）来规划，默认每个LBA的大小是512字节！ 前34个LBA用来存放主分区记录和其他相关信息，并且，在磁盘的最后，也有34个LBA用来作为前34个LBA的备份，以达到提高磁盘数据安全性的目的！
+
+LAB从0开始编号！这里，我们暂时只要知道，0号LBA用来作为MBR的兼容区块，里边存放的内容和MBR中的第一个扇区内容基本差不多！1号LBA 记录了分区表本身的位置和最后32个LBA的位置，还有分区表的校验码等等！
+
+从LBA2-LBA33 用来记录分区信息！，没个LBA记录四组，每组使用128bit几率起始LBA和结束LBA编号！ 所以，GPT磁盘分区表的单块磁盘容量达到了惊人的2^64*512字节！ 具体是多少，有兴趣的可以算一算！ 并且，分区的个数，也达到了之前的32倍！ 也就是128个！
+
+LVM:逻辑卷管理器（logical volume manager）
+
+逻辑卷管理器，能将底层不同的磁盘设备，或者说分区，组合成一个大磁盘，以方便用户的使用！它还提供弹性收缩的功能！ 可以自由调整逻辑卷的大小！ 
+
+### LVM的几个核心概念：PV，VG，LV，PE，及其管理工具
+
+* PV：physical volume
+
+  物理卷：也就是我们底层的磁盘设备，或者说磁盘分区
+
+  管理工具
+
+  > ​    pvs：显示pv简要信息
+  >
+  > ​    pvdisplay：显示pv详细信息
+  >
+  > ​    pvcreate /dev/DEVICE：创建pv
+
+* VG：volume group
+
+  卷组：所谓的卷组，就是LVM组合起来的大磁盘了！
+
+  管理工具：
+
+  >vgs：显示vg简要信息
+  >
+  >vgdisplay：显示vg详细信息
+  >
+  >vgcreate 【-s #[kKmMgGtTpPeE]】VolumeGroupName PhysicaDevicePath 【PhysicalDevicePath。。。】创建VG，-s指定创建的卷组大小！
+  >
+  >vgextend VGname PhysicalDevicePath 【PhysicalDevicePath。。。】扩展卷组
+  >
+  >​    vgreduce VGname PhysicalDevicePath 【PhysicalDevicePath。。。】缩减卷组，缩减先需要先使用pvmove命令，将要所见到呃卷组中的数据，移动到其他卷组
+
+* LV：logical volume
+
+  逻辑卷：大磁盘创建好后，我们就需要在大磁盘上进行分区了！ 这个可以对应到磁盘的分区上
+
+  管理工具：
+
+  > lvs:显示lv简要信息
+  >
+  > lvdisplay：显示lv详细信息
+  >
+  > lvcreate -L #[mMgGtT] -n NAME VGname：创建lv
+  >
+  > lvextend -L [+]#[mMgGtT] /dev/VGname/LVname    扩展lv
+  >
+  > lvreduce -L [-]#[ mMgGtT] /dev/VGname/LVname    缩减lv
+
+* PE：physical extent
+
+  物理扩展快： 这个是什么呢？ 想想成为我们磁盘中的block大小就可以了！他是lvm大磁盘中的最小存储单位！
+
+LVM 的实现过程，就是将底层的物理卷组合成为卷组，而后在卷组上划分出逻辑卷，而这个逻辑卷，就是我们可以格式化存储数据的分区了！
+
+### lvm的简单创建过程
+
+准备工作，我们先在不同的磁盘上划分出三个分区来！注意，lvm的物理卷，需要将其设置为8e（lvm）
+
+```bash
+[root@localhost ~]# fdisk /dev/sda
+欢迎使用 fdisk (util-linux 2.23.2)。
+
+更改将停留在内存中，直到您决定将更改写入磁盘。
+使用写入命令前请三思。
+
+
+命令(输入 m 获取帮助)：p
+
+磁盘 /dev/sda：21.5 GB, 21474836480 字节，41943040 个扇区
+Units = 扇区 of 1 * 512 = 512 bytes
+扇区大小(逻辑/物理)：512 字节 / 512 字节
+I/O 大小(最小/最佳)：512 字节 / 512 字节
+磁盘标签类型：dos
+磁盘标识符：0x000438dd
+
+   设备 Boot      Start         End      Blocks   Id  System
+/dev/sda1   *        2048     4196351     2097152   83  Linux
+/dev/sda2         4196352    33572863    14688256   8e  Linux LVM
+/dev/sda3        33572864    35670015     1048576   82  Linux swap / Solaris
+/dev/sda4        35670016    41943039     3136512    5  Extended
+/dev/sda5        35672064    37769215     1048576   83  Linux
+/dev/sda6        37771264    39868415     1048576   82  Linux swap / Solaris
+命令(输入 m 获取帮助)：t  
+分区号 (1-6，默认 6)：6
+Hex 代码(输入 L 列出所有代码)：8e    
+已将分区“Linux swap / Solaris”的类型更改为“Linux LVM”
+```
+
+将sda上之前的一个swap分区拿来做实验
+
+```bash
+磁盘 /dev/sdb：53.7 GB, 53687091200 字节，104857600 个扇区
+Units = 扇区 of 1 * 512 = 512 bytes
+扇区大小(逻辑/物理)：512 字节 / 512 字节
+I/O 大小(最小/最佳)：512 字节 / 512 字节
+磁盘标签类型：dos
+磁盘标识符：0x75064cc3
+
+   设备 Boot      Start         End      Blocks   Id  System
+/dev/sdb1            2048    20973567    10485760   8e  Linux LVM
+/dev/sdb2        20973568    25167871     2097152   8e  Linux LVM
+```
+
+再在/dev/sdb上创建两个分区！ 并将格式改为linux lvm 现在三个底层物理卷就准备好了！
+
+先创建三个pv
+
+```bash
+[root@localhost ~]# pvcreate /dev/sda6 /dev/sdb1 /dev/sdb2
+  Physical volume "/dev/sda6" successfully created.
+  Physical volume "/dev/sdb1" successfully created.
+  Physical volume "/dev/sdb2" successfully created.
+```
+
+然后将/dev/sdb1,2 创建为一个卷组，指明卷组名为test
+
+```bash
+[root@localhost ~]# vgcreate test /dev/sdb1 /dev/sdb2
+  Volume group "test" successfully created
+```
+
+在test卷组中创建名为testlv的lv, 大小1G
+
+```bash
+[root@localhost ~]# lvcreate -L 1G -n testlv test
+  Logical volume "testlv" created.
+```
+
+将testlv格式化为ext4文件系统(使用lvdisplay可以查看其信息)
+
+```bash
+[root@localhost ~]# lvdisplay
+  --- Logical volume ---
+  LV Path                /dev/test/testlv
+  LV Name                testlv
+  VG Name                test
+  LV UUID                V8sTiq-ZUgT-Grcl-0NKt-UbrT-Oh3V-mh1G2s
+  LV Write Access        read/write
+  LV Creation host, time localhost.localdomain, 2019-04-14 23:11:57 +0800
+  LV Status              available
+  # open                 0
+  LV Size                1.00 GiB
+  Current LE             256
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     8192
+  Block device           253:3
+[root@localhost ~]# mke2fs /dev/test/testlv
+mke2fs 1.42.9 (28-Dec-2013)
+文件系统标签=
+OS type: Linux
+块大小=4096 (log=2)
+分块大小=4096 (log=2)
+Stride=0 blocks, Stripe width=0 blocks
+65536 inodes, 262144 blocks
+13107 blocks (5.00%) reserved for the super user
+第一个数据块=0
+Maximum filesystem blocks=268435456
+8 block groups
+32768 blocks per group, 32768 fragments per group
+8192 inodes per group
+Superblock backups stored on blocks: 
+	32768, 98304, 163840, 229376
+
+Allocating group tables: 完成                            
+正在写入inode表: 完成                            
+Writing superblocks and filesystem accounting information: 完成
+
+```
+
+至此，我们的逻辑卷就创建完成了，lv的详细信息我们有已经看过了，我们来看看pv，vg的详细信息
+
+```bash
+[root@localhost ~]# pvdisplay
+  --- Physical volume ---
+  PV Name               /dev/sdb1
+  VG Name               test
+  PV Size               10.00 GiB / not usable 4.00 MiB
+  Allocatable           yes 
+  PE Size               4.00 MiB
+  Total PE              2559
+  Free PE               2303
+  Allocated PE          256
+  PV UUID               9uUPyD-CL1K-wkVO-kW6U-TSdK-SXLv-KBP4Oq
+   
+  --- Physical volume ---
+  PV Name               /dev/sdb2
+  VG Name               test
+  PV Size               2.00 GiB / not usable 4.00 MiB
+  Allocatable           yes 
+  PE Size               4.00 MiB
+  Total PE              511
+  Free PE               511
+  Allocated PE          0
+  PV UUID               ihp2aO-0VQG-e2m4-z8zZ-uQgf-C2j6-NTgHUy
+[root@localhost ~]# vgdisplay
+  --- Volume group ---
+  VG Name               test
+  System ID             
+  Format                lvm2
+  Metadata Areas        2
+  Metadata Sequence No  2
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                0
+  Cur LV                1
+  Open LV               0
+  Max PV                0
+  Cur PV                2
+  Act PV                2
+  VG Size               11.99 GiB
+  PE Size               4.00 MiB
+  Total PE              3070
+  Alloc PE / Size       256 / 1.00 GiB
+  Free  PE / Size       2814 / 10.99 GiB
+  VG UUID               yEdjIV-Ev0Q-7ZAw-CF2X-pSkr-z4Sp-uYyjEQ
+
+```
+
+我们可以看到，我们的卷组大小为12G
+
+我们先来实现以下lv的扩展！ 把之前的/dev/sda6加到卷组来，然后把lv大小扩展到12.5G(因为我的/dev/sda6只有1g大小)
+
+```bash
+[root@localhost ~]# vgextend test /dev/sda6
+  Volume group "test" successfully extended
+[root@localhost ~]# vgs test
+  VG   #PV #LV #SN Attr   VSize   VFree  
+  test   3   1   0 wz--n- <12.99g <11.99g
+[root@localhost ~]# lvextend -L 12.5G /dev/test/testlv
+  Size of logical volume test/testlv changed from 1.00 GiB (256 extents) to 12.50 GiB (3200 extents).
+  Logical volume test/testlv successfully resized.
+[root@localhost ~]# lvs /dev/test/testlv
+  LV     VG   Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  testlv test -wi-a----- 12.50g                                                    
+```
+
+到这里，其实还没完，我们的lv虽然扩展了，但是我们的文件系统，，还没有！
+
+```bash
+[root@localhost ~]# mount /dev/test/testlv /mydata/
+[root@localhost ~]# df -h /mydata/
+文件系统                 容量  已用  可用 已用% 挂载点
+/dev/mapper/test-testlv 1008M  1.3M  956M    1% /mydata
+[root@localhost ~]# resize2fs /dev/test/testlv
+resize2fs 1.42.9 (28-Dec-2013)
+Filesystem at /dev/test/testlv is mounted on /mydata; on-line resizing required
+old_desc_blocks = 1, new_desc_blocks = 1
+The filesystem on /dev/test/testlv is now 3276800 blocks long.
+[root@localhost ~]# df -h /mydata/
+文件系统                 容量  已用  可用 已用% 挂载点
+/dev/mapper/test-testlv   13G  2.5M   12G    1% /mydata
+
+```
+
+至此，一个文件系统的扩展才算完成！
+
+接下来，我们再试试缩减！我们把/dev/sdb1,2都砍掉，把文件系统缩减至0.5G，缩减前，需要先卸载文件系统
+
+扩展，我们是自下而上的，收缩，我们需要自上而下：
+
+先文件系统，然后逻辑卷，在到卷组，之后，物理卷就可以去领盒饭了！
+
+来，我们做一遍：
+
+```bash
+[root@localhost ~]# umount /mydata/
+[root@localhost ~]# e2fsck -f /dev/test/testlv
+e2fsck 1.42.9 (28-Dec-2013)
+第一步: 检查inode,块,和大小
+第二步: 检查目录结构
+第3步: 检查目录连接性
+Pass 4: Checking reference counts
+第5步: 检查簇概要信息
+[root@localhost ~]# resize2fs /dev/test/testlv 500m
+resize2fs 1.42.9 (28-Dec-2013)
+Resizing the filesystem on /dev/test/testlv to 128000 (4k) blocks.
+The filesystem on /dev/test/testlv is now 128000 blocks long.
+[root@localhost ~]# lvreduce -L 900m /dev/test/testlv
+  WARNING: Reducing active logical volume to 900.00 MiB.
+  THIS MAY DESTROY YOUR DATA (filesystem etc.)
+Do you really want to reduce test/testlv? [y/n]: y
+  Size of logical volume test/testlv changed from 12.50 GiB (3200 extents) to 900.00 MiB (225 extents).
+  Logical volume test/testlv successfully resized.
+[root@localhost ~]# pvmove /dev/sdb2
+  /dev/sdb2: Moved: 0.00%
+  /dev/sdb2: Moved: 57.33%
+  /dev/sdb2: Moved: 100.00%
+  [root@localhost ~]# vgreduce test /dev/sdb2
+  Removed "/dev/sdb2" from volume group "test"
+[root@localhost ~]# pvmove /dev/sdb1
+  /dev/sdb1: Moved: 0.89%
+  /dev/sdb1: Moved: 57.33%
+  /dev/sdb1: Moved: 100.00%
+[root@localhost ~]# vgreduce test /dev/sdb1
+  Removed "/dev/sdb1" from volume group "test"
+[root@localhost ~]# vgdisplay  test
+  --- Volume group ---
+  VG Name               test
+  System ID             
+  Format                lvm2
+  Metadata Areas        1
+  Metadata Sequence No  16
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                0
+  Cur LV                1
+  Open LV               0
+  Max PV                0
+  Cur PV                1
+  Act PV                1
+  VG Size               1020.00 MiB
+  PE Size               4.00 MiB
+  Total PE              255
+  Alloc PE / Size       225 / 900.00 MiB
+  Free  PE / Size       30 / 120.00 MiB
+  VG UUID               yEdjIV-Ev0Q-7ZAw-CF2X-pSkr-z4Sp-uYyjEQ
+[root@localhost ~]# mount /dev/test/testlv /mydata/
+[root@localhost ~]# df -h /mydata/
+文件系统                 容量  已用  可用 已用% 挂载点
+/dev/mapper/test-testlv  492M  780K  471M    1% /mydata
+
+```
+
+步骤是，卸载文件系统，强制检测文件系统，缩减文件系统为500M ，缩减卷组为900M，分别移除sdb2，和sdb1的数据，而后将其移出test卷组！ 最后可以看到，我们的卷组大小1020m， 文件系统，471m  卷组的数值出入有点大，大概是因为基于pe大小的来划分的，所以出现了些误差把！暂且不管他！
+
+写到这里，lvm就讲的差不多了！想到再补充！
+
+休息了！写博客着实挺累的！
