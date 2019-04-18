@@ -233,16 +233,27 @@ yum的配置文件：
 配置文件格式：
 
 > [main]： 固定值
+>
 > cachedir=/var/cache/yum/$basearch/$releasever：指定yum的缓存数据存储位置
+>
 > keepcache=0： 指定安装完成后是否保留程序包，0为不保留
+>
 > debuglevel=2:
+>
 > logfile=/var/log/yum.log：日志文件保存位置
+>
 > exactarch=1： 当安装已经安装的包时，是否会报错，1表示不报错，0表示会报错
+>
 > obsoletes=1：
+>
 > gpgcheck=1: 是否检验来源合法性，可以被单独的仓库配置中的选项覆盖！
+>
 > plugins=1:是否启用插件，1为允许
+>
 > installonly_limit=5
+>
 > bugtracker_url=http://bugs.centos.org/set_project.php?project_id=19&ref=http://bugs.centos.org/bug_report_page.php?category=yum
+>
 > distroverpkg=centos-release
 
 大致了解一下就好！一般也很少来配置

@@ -503,6 +503,10 @@ LVM:逻辑卷管理器（logical volume manager）
 
 逻辑卷管理器，能将底层不同的磁盘设备，或者说分区，组合成一个大磁盘，以方便用户的使用！它还提供弹性收缩的功能！ 可以自由调整逻辑卷的大小！ 
 
+
+
+# LVM
+
 ### LVM的几个核心概念：PV，VG，LV，PE，及其管理工具
 
 * PV：physical volume
@@ -548,6 +552,16 @@ LVM:逻辑卷管理器（logical volume manager）
   > lvextend -L [+]#[mMgGtT] /dev/VGname/LVname    扩展lv
   >
   > lvreduce -L [-]#[ mMgGtT] /dev/VGname/LVname    缩减lv
+
+  lv在/dev目录下的文件名为：
+
+  ​        /dev/dm-#
+
+  为了方便记忆，会有两个链接文件指向这个设备文件，他们分别是：
+
+  ​    /dev/mapper/VGname-LVname
+
+  ​    /dev/VGname/LVname
 
 * PE：physical extent
 
