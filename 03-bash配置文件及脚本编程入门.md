@@ -360,7 +360,7 @@ case支持glob风格的通配符
 
 语法：
 
-> or VARAIBLE in LIST；do
+> for VARAIBLE in LIST；do
 >
 > 循环表
 >

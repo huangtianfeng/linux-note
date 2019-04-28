@@ -291,6 +291,8 @@ xz/unxz/xzcat：压缩/解压缩/直接查看压缩文件的内容
 
 q）quit：退出脚本
 
+执行完毕后，继续等待用户操作，知道输入q退出脚本！
+
 ```shell
 [root@localhost scripts]# cat ./info.sh
 #!/bin/bash
