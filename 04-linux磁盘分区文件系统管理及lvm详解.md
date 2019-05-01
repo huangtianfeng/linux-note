@@ -40,7 +40,7 @@ change time 表示的则是最近更改元数据的时间，该时间不允许�
 
 我们通常找一个文件的过程大概是这样的，列入，我们找/etc/passwd 文件，我们从根目录开始，首先找到/etc目录，在该数据块中找到passwd文件名所对应到的inode号，而后去找这个inode，最后根据这个inode中的数据块指针，找到passwd文件存放的真正位置，说起来可能有点绕，上图
 
-![文件查找](F:\Users\tian\Pictures\linux图库\文件查找.png)
+![文件查找](https://github.com/huangtianfeng/pictures/blob/master/linux%E5%9B%BE%E5%BA%93/%E6%96%87%E4%BB%B6%E6%9F%A5%E6%89%BE.png)
 
 注意，根目录下是存放有其下各目录和inode号的对应关系的，所以从根目录便可直接找到etc目录的inode！
 
@@ -52,7 +52,7 @@ change time 表示的则是最近更改元数据的时间，该时间不允许�
 
 说起来又有点绕了，老规矩，以passwd文件为例，建它的软链接和硬连接，上图
 
-![软链接和硬连接](F:\Users\tian\Pictures\linux图库\软链接和硬连接.png)
+![软链接和硬连接](https://github.com/huangtianfeng/pictures/blob/master/linux%E5%9B%BE%E5%BA%93/%E8%BD%AF%E9%93%BE%E6%8E%A5%E5%92%8C%E7%A1%AC%E8%BF%9E%E6%8E%A5.png)
 
 这个图的硬链接应该是指向inode，这里说明一下，有时间再来改一下！
 
