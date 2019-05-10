@@ -37,7 +37,7 @@ linux系统主要由两部分组成：
 
 遵循FHS，有特定目录结构的分区，才能够作为根分区或者说根文件系统来使用，仅有结构还不够，其上还需要有各种各样所需的基本文件，其中有一个最关键的程序文件为init程序，站在动态视角来看，用户空间的所有进程都是由该程序创建的！
 
-**注意：内核是脱离跟文件系统，并负责挂载和管理根文件系统的虚拟机**
+**注意：内核是脱离根文件系统，可以理解为它是一个负责挂载和管理根文件系统的虚拟机**
 
 内核在启动之前，它只是一个磁盘上的静态文件，所谓启动，一定是将其加载至内存中，运行为进程或者线程，那么在内核启动之前，就需要在计算机启动时，有一个工作于内核启动前的程序，负责将内核启动起来，该程序会在后面的启动流程中介绍到
 
@@ -57,7 +57,7 @@ linux系统主要由两部分组成：
    >
    > 该目录下有许多辅助性的文件，最主要的是kernel目录，其下又有许多子目录，包括文件系统，驱动，加密解密组件，与平台相关的特有代码，内存管理功能，网络功能等等相关模块
 
-内核要装载根时，需要先装载根所在磁盘的磁盘驱动程序，但是驱动在/lib/modules目录下，这事就有点麻烦了，不过，问题总是有解决办法的，这里的解决办法就是，将驱动程序编译进内核咯，这个办法，面向个人时，的确很好，但是，如果是系统发行商，需要面对的是各种各样的用户，这就意味着，需要将市面上所有常见的硬盘驱动编译进内核，而每个特定用户又只会使用到一种驱动，这样内核就太臃肿了，有点得不偿失，怎么办呢？   答案是，借助于中间临时系统，内核启动后，去加载一个临时根文件系统，该文件系统下的/lib/modules目录下放的是当前计算机专用的磁盘驱动，这个文件系统只适用于当前设备，它是在安装操作系统时，扫描当前设备的磁盘型号，为当前设备量身定制的，这个文件我们称之为基于内存的磁盘设备：ramdisk，它把内存中的某一段空间当磁盘用，挂载根文件系统后，临时根文件系统将自动让位。
+内核要装载根时，需要先装载根所在磁盘的磁盘驱动程序，但是驱动又在根目录下的/lib/modules目录下，这事就有点麻烦了，不过，问题总是有解决办法的，这里的解决办法就是，将驱动程序编译进内核，这个办法，面向个人时，的确很好，但是，如果是系统发行商，需要面对的是各种各样的用户，这就意味着，需要将市面上所有常见的硬盘驱动编译进内核，而每个特定用户又只会使用到一种驱动，这样内核就太臃肿了，有点得不偿失，怎么办呢？   答案是，借助于中间临时系统，内核启动后，去加载一个临时根文件系统，该文件系统下的/lib/modules目录下放的是当前计算机专用的磁盘驱动，这个文件系统只适用于当前设备，它是在安装操作系统时，扫描当前设备的磁盘型号，为当前设备量身定制的，这个文件我们称之为基于内存的磁盘设备：ramdisk，它把内存中的某一段空间当磁盘用，挂载根文件系统后，临时根文件系统将自动让位。
 
 临时根文件系统不是必须的，当我们知道自己磁盘的型号，以及自行编译内核，将其驱动编译进内核，就可以不需要ramdisk
 
@@ -69,9 +69,9 @@ ramdisk
 对centos6、7来讲，该文件在/boot目录下，名为initramfs-VERSION-release.img
    > 用来创建该文件的工具程序：dracut、mkinitrd
 
-一个是基ram的磁盘，一个是基于ram的文件系统
+一个是基与ram的**磁盘**，一个是基于ram的**文件系统**
 
-> 说道这两者的区别，就要提一个linux内核的特性
+> 说到这两者的区别，就要提一个linux内核的特性
 >
 > linux内核的特性之一：使用缓冲（buffer）和缓存（cache）来加速对磁盘上的文件访问
 >
@@ -116,8 +116,8 @@ ramdisk
    > grub加载完内核后，内核开始自身初始化
    >
    > 1. 探测可识别到的所有硬件设备
-   > 2. 加载各种硬件驱动程序（有可能借助于ramdisk加载驱动）
-   > 3. 以只读方式挂载根文件系统（放置内核bug把文件系统干掉了）
+   > 2. 加载各种硬件驱动程序（有可能借助于ramdisk加载跟文件系统所在磁盘的驱动）
+   > 3. 切换根，以只读方式挂载根文件系统（防止内核bug把文件系统干掉了）
    > 4. 运行用户空间的第一个应用程序：/sbin/init
 
    init程序的类型（从5-7迭代了三次）
@@ -182,3 +182,172 @@ N 3
 ## 配置文件：/etc/initab
 
 该文件决定了init在整个初始化过程中，要做哪些事！ （待补充）
+
+# CentOS7的systemd
+
+新特性：
+
+1. 系统引导时实现服务并行启动
+2. 按需激活进程，再次之前让进程处于半活动状态
+3. 能做系统状态快照
+4. 基于依赖关系定义的服务控制逻辑
+
+核心概念：unit
+
+unit由其相关的配置文件进行标识，识别和配置，文件中主要包含了与系统服务相关的，与某个服务监听的socket相关的、或者与快照相关的以及其他与init相关的信息
+
+这些配置文件主要保存在
+**/usr/lib/systemd/system**
+/run/systemd/system
+**/etc/systemd/system**
+
+这些目录下的文件，每个文件称之为一个unit文件，以后缀名分类
+
+常见的unit类型：
+
+1. Service unit： 文件扩展名为.service ,用于定义系统服务，类似于/etc/init.d下的服务脚本，扮演了以前的服务脚本的角色；
+2. Target unit：文件扩展名为.target，主要用于模拟实现“运行级别”；
+3. Device unit：文件扩展名为.device，用于定义内核识别的设备；
+4. Mount unit：.mount，用于定义文件系统挂载点；
+5. Socket unit：.socket, 标识进程间通信用到的socket文件
+6. Snapshot unit：.snapshot，用于管理系统快照；
+7. Swap unit：.swap，用于标识swap设备
+8. Automount unit：.automount,用于文件系统自动挂载
+9. Path unit：.path，用于定义文件系统中的一文件或目录
+
+关键特性：
+
+1. 基于socket的激活机制：socket与程序是分离的；
+2. 基于bus的激活机制；
+3. 基于device的激活机制；
+4. 基于Path的激活机制；
+5. 系统快照：能够保存各unit的当前状态信息于持久存储设备中；
+6. 向后兼容SysV init脚本；/etc/init.d/
+
+注意：
+
+systemctl 的命令是固定不变的
+
+非由systemd启动的服务，systemctl无法与之通信，无法控制该服务
+
+## 管理系统服务
+
+CentOS 7 通过service类型的unit文件来管理系统服务
+
+systemctl命令：
+
+语法：systemctl [option] COMMAND [NAME...]
+
+#### service unit的管理（与CentOS 6的对比）
+
+| 功能     | CentOS-6           | CentOS-7                     |功能描述|
+| :------: | ------------------ | ---------------------------- | -------- |
+| 启动     | service NAME start | systemctl start NAME.service ||
+| 停止     | service NAME stop | systemctl stop NAME.service ||
+| 重启     | service NAME restart | systemctl restart NAME.service |                                                      |
+| 查看状态 | service NAME status | systemctl stop NAME.status                   |                                                      |
+| 条件式重启 | service NAME condrestart | systemctl try-restart NAME.service |如果此前启动了，重启，如果没启动，那就算了|
+| 重载或重启服务 |  | systemctl reload-or-restart NAME.service |重载：重新读取配置文件，支持重载就重载，不支持就重启|
+| 重载或条件式重启服务 |  | systemctl reload-or-try-restart NAME.service ||
+| 设置服务开机自启 | chkconfig NAME on | systemctl enable NAME.service ||
+| 禁止服务开机自启 | chkconfig NAME off | systemctl disable NAME.service ||
+| 查看某服务是否能开机自启 | chkconfig --list NAME | systemctl is-enable NAME.service ||
+| 禁止某服务设定为开机自启 |  | systemctl mask NAME.service ||
+| 取消某服务设定的禁止开机自启 |  | systemctl unmask NAME.service ||
+| 查看某服务当前激活与否的状态 |  | systemctl is-active NAME.service ||
+| 查看所有已激活的服务 |  | systemctl list-units --t service |加上--all或-a 可以显示所有的包括未激活的service|
+| 查看服务的依赖关系 |  | systemctl list-dependencies NAME.service ||
+
+#### target units管理
+
+运行级别：
+
+0==>runlevel0.target/poweroff.target    关机
+
+1==>runlevel1.target/rescue.target    救援模式
+
+2==>runlevel2.target/multi-user.target
+
+3==>runlevel3.target/multi-user.target
+
+4==>runlevel4.target/multi-user.target
+
+5==>runlevel5.target/graphical.target
+
+6==>runlevel6.target/reboot.target
+
+级别切换：init N==>systemctl isolate NAME.target
+
+查看级别：runlevel == systemctl list-units --t target
+
+查看所有级别：systemctl list-units -t target -a
+
+获取默认运行级别：systemctl get-default
+
+修改默认运行级别：修改/etc/inittab/文件==》systemctl set-default NAME.target（0和6不应该当成默认）
+
+切换至救援模式（级别1）：systemctl rescue
+
+切换至emergency模式：systemctl emergency
+
+其他常用命令：
+
+> 关机：systemctl halt、systemctl poweroff
+>
+> 重启：systemctl reboot
+>
+> 挂起：systemctl suspend
+>
+> 创建快照：systemctl hlbernate
+>
+> 快照并挂起：systemctl hibernate-sleep
+
+## service units file
+
+设置定义启动就是在/etc/systemd/system目录下创建对应的文件链接至/usr/lib/systemd/system目录下对应的文件
+
+service units文件通常有三部分组成
+
+[Unit]：定义与unit类型无关的通用选项；用于提供unit的描述信息，unit行为及依赖关系
+
+> Description：描述信息，意义性描述，使用systemctl status时可以看到
+>
+> After：定义unit的启动次序，表示当前unit应该晚于哪些unit启动，其功能与Before相反
+>
+> Wants: 依赖到的其他unit（弱依赖，被依赖的units无法激活时，不影响当前unit的激活）
+>
+> Requles：依赖到的其他units（强依赖，表示被依赖的units无法激活时，当前unit一定不能激活）
+>
+> Conflicts：定义units间的冲突关系
+
+[Service]（跟类型相关的，也可以是Target）：与特定类型相关的专用选项：此处为service类型
+
+> Type：用于定义影响ExecStart及相关参数功能的unit进程启动类型
+>
+> > simple：由execstart指明的程序就是服务的主进程，默认type就是simple
+> >
+> > forking：表示由execstart启动的进程，生成的其中一个子进程成为主进程
+> >
+> > notify：类似于simple，
+> >
+> > 了解两个就可以了，用的最多的还是simple
+>
+> EnvironmentFile：环境配置文件，为Exec指令提供一些变量
+>
+> **ExecStart**：指明启动unit要运行的命令或脚本；
+>
+> **ExecStop**：指明停止unit要运行的命令或脚本
+>
+> **Restart**：意外终止时自动重启要运行的命令或脚本
+
+[Install]：定义由"systemctl enable"以及"systemctl disable"命令在实现服务启用或禁用时用到的一些选项
+
+>  Alias，别名
+>
+> RequiredBy：被哪些units所依赖（强依赖）
+>
+> WantedBy：被哪些units所依赖（弱依赖）
+
+注意：对于新创建的unit文件或修改了的unit文件，要通知systemd重载此配置文件
+
+\#systemctl daemon-reload
