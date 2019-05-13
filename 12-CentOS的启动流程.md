@@ -380,3 +380,4 @@ service units文件通常有三部分组成，Unit、Service、Install
 
 \#systemctl daemon-reload
 
+awk相关知识点[https://github.com/huangtianfeng/linux-note/blob/master/06-%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%8F%8A%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E5%B7%A5%E5%85%B7.md#awk%E6%96%87%E6%9C%AC%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%B7%A5%E5%85%B7%E6%8A%A5%E5%91%8A%E7%94%9F%E6%88%90%E5%99%A8]
