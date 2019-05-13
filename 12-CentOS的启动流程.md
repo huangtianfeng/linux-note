@@ -2,17 +2,13 @@
 
 # linux系统的启动流程
 
-## 相关概念
-
 linux系统主要由两部分组成：
 
 内核+根文件系统
 
-站在静态视角，由磁盘分区和相关文件组成
+* 内核
 
-站在计算机的全局视角来看，内核处于底层硬件之上，从底层硬件开始到向上到内核，然后就是库文件，再到各种应用程序，包括最为关键的shell接口程序。
-
-其内核实现的功能有如下几种：
+  内核是一个工作在计算机硬件之上通用软件程序，负责对硬件的管理，以及实现以下功能
 
 1. 进程管理
 > 包括进程的创建，调度，销毁等等一系列操作，其中最关键的为进程调度
@@ -31,17 +27,15 @@ linux系统主要由两部分组成：
 6. 安全功能
 > 例如各种提供加密解密的栈
 
-站在硬盘的角度，内核一定是存放在硬盘上的某个分区上的，该分区被称之为启动分区，对于windows而言，称之为活动分区，对于linux而言，名为boot分区（挂载在根文件系统的/boot目录下）
+站在硬盘的角度，内核一定是存放在硬盘上的某个分区上的，该分区被称之为启动分区，对于windows而言，也被称之为活动分区，对于linux而言，又被命名为boot分区（挂载在根文件系统的/boot目录下）
 
-根文件系统：
+* 根文件系统：
 
 遵循FHS，有特定目录结构的分区，才能够作为根分区或者说根文件系统来使用，仅有结构还不够，其上还需要有各种各样所需的基本文件，其中有一个最关键的程序文件为init程序，站在动态视角来看，用户空间的所有进程都是由该程序创建的！
 
 **注意：内核是脱离根文件系统，可以理解为它是一个负责挂载和管理根文件系统的虚拟机**
 
-内核在启动之前，它只是一个磁盘上的静态文件，所谓启动，一定是将其加载至内存中，运行为进程或者线程，那么在内核启动之前，就需要在计算机启动时，有一个工作于内核启动前的程序，负责将内核启动起来，该程序会在后面的启动流程中介绍到
-
-内核也是一个文件，独特之处在于，它是计算机启动后第一个要运行的程序，并且运行后要接管整个硬件的程序
+内核在启动之前，它只是一个磁盘上的静态文件，所谓启动，一定是将其加载至内存中，运行为进程或者线程，那么在内核启动之前，就需要在计算机启动时，有一个工作于内核启动前的程序，负责将内核启动起来，该程序会在后面的启动流程中介绍到，内核启动后，将接管整个计算机的硬件控制权。
 
 内核的组成部分：
 
@@ -185,21 +179,34 @@ N 3
 
 # CentOS7的systemd
 
+systemd：是一个系统启动和服务器守护进程管理器，负责在系统启动或运行时，激活系统资源，服务器进程和其他进程
+
 新特性：
 
 1. 系统引导时实现服务并行启动
+
+   > 有依赖关系，也可以并行启动，
+
 2. 按需激活进程，再次之前让进程处于半活动状态
+
 3. 能做系统状态快照
+
 4. 基于依赖关系定义的服务控制逻辑
 
+   > 自动启华的服务依赖关系管理；当一个服务启动时，需要依赖于某服务，那么启动该服务的同时，如果依赖的服务未启动，会自动启动！
+
+5. 采用socket式于D-Bus总线式激活机制
+
 核心概念：unit
+
+unit表示不同类型的systemd对象，通过配置文件进行标识和配置；文件中主要包含了系统服务，监听socket、保存的系统快照以及其他与init相关的信息
 
 unit由其相关的配置文件进行标识，识别和配置，文件中主要包含了与系统服务相关的，与某个服务监听的socket相关的、或者与快照相关的以及其他与init相关的信息
 
 这些配置文件主要保存在
-**/usr/lib/systemd/system**
-/run/systemd/system
-**/etc/systemd/system**
+**/usr/lib/systemd/system**：每个服务最主要的启动脚本设置，类似于之前的/etc/init.d/
+/run/systemd/system：系统执行过程中所产生的服务脚本，比上面目录有限运行。
+**/etc/systemd/system**： 管理员建立的执行脚本，类似于/etc/rcN.d/Sxx的功能，比上面目录优先级高
 
 这些目录下的文件，每个文件称之为一个unit文件，以后缀名分类
 
@@ -252,11 +259,32 @@ systemctl命令：
 | 设置服务开机自启 | chkconfig NAME on | systemctl enable NAME.service ||
 | 禁止服务开机自启 | chkconfig NAME off | systemctl disable NAME.service ||
 | 查看某服务是否能开机自启 | chkconfig --list NAME | systemctl is-enable NAME.service ||
-| 禁止某服务设定为开机自启 |  | systemctl mask NAME.service ||
-| 取消某服务设定的禁止开机自启 |  | systemctl unmask NAME.service ||
+| 禁止手动和自动启动，将脚本文件遮挡 |  | systemctl mask NAME.service ||
+| 取消某服务设定的禁止启动 |  | systemctl unmask NAME.service ||
 | 查看某服务当前激活与否的状态 |  | systemctl is-active NAME.service ||
 | 查看所有已激活的服务 |  | systemctl list-units --t service |加上--all或-a 可以显示所有的包括未激活的service|
 | 查看服务的依赖关系 |  | systemctl list-dependencies NAME.service ||
+| 杀死进程 | | systemctl kill unitname ||
+
+#### 服务状态：
+
+systemctl list-unit-files --type service --all 显示状态
+
+> loaded:	 Unit配置文件已处理，已经加载到内存中
+>
+> active（running）: 一次或多次持续处理的运行
+>
+> active（exited）:成功完成一次性的配置
+>
+> active（waiting）：运行中，等待一个事件
+>
+> inactive：不运行
+>
+> enabled：开机启动
+>
+> disabled：开机不启动
+>
+> static：开机不启动，但可以被另一个服务激活
 
 #### target units管理
 
@@ -302,11 +330,11 @@ systemctl命令：
 >
 > 快照并挂起：systemctl hibernate-sleep
 
-## service units file
+## service units文件格式
 
 设置定义启动就是在/etc/systemd/system目录下创建对应的文件链接至/usr/lib/systemd/system目录下对应的文件
 
-service units文件通常有三部分组成
+service units文件通常有三部分组成，Unit、Service、Install
 
 [Unit]：定义与unit类型无关的通用选项；用于提供unit的描述信息，unit行为及依赖关系
 
@@ -351,3 +379,4 @@ service units文件通常有三部分组成
 注意：对于新创建的unit文件或修改了的unit文件，要通知systemd重载此配置文件
 
 \#systemctl daemon-reload
+

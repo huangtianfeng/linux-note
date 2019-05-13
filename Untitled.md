@@ -10,3 +10,63 @@
 数据都存储在一个共享存储设备中，所有服务器都能访问，读写！
 
  
+
+集群类型：
+
+LB：Load Balancing Cluster：负载均衡集群；
+
+HA：High Availlablity Cluster：高可用集群；
+
+HP：High Performance Cluster：高性能集群；
+
+
+
+## 负载均衡集群的实现
+
+可以通过硬件的方式和软件的方式实现：
+
+硬件：
+
+> F5 Big-IP
+>
+> Citrix Netscaler
+>
+> A10 A10
+
+软件：
+
+> lvs:Linux Virtual Server
+>
+> nginx
+>
+> haproxy
+>
+> ats:appche  traffic server
+>
+> perbal
+>
+> pound
+
+基于工作的协议层次，又可以分为：
+
+传输层（通用）：（DPORT)
+
+> LVS
+>
+> nginx（stream）
+>
+> haproxy（mode tcp）
+
+应用层（专用）：（自定义的请求模型分类）
+
+> proxy  server:
+>
+> ​	http:nginx(http),httpd,haproxy(mode http),...
+>
+> ​	fastcgi：nginx，httpd...
+>
+> ​	mysql： ProxySQL，...
+>
+> ...
+>
+> 

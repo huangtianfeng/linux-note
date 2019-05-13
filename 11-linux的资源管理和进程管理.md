@@ -83,21 +83,66 @@ IPC机制：Inter Process Communication，进程间通信机制
 
 # 进程管理命令
 
+内核通过/proc/ 目录，将内核的状态信息输出给用户，其中包含两种参数
+内核参数：可设置其值从而调整内核运行特性的参数：可设置的位于/proc/sys/目录下（拥有写权限的才能修改）
+状态变量：其用于输出内核中统计信息或状态信息，仅用于查看
+
+为了统一linux一切接文件的哲学思想，各参数都被模拟成文件系统乐行，参数本身被模拟成文件，位置被模拟成路径，或者说目录！
+
+每个进程在/proc目录下，都有一个以pid同名的目录，该目录中存放了该进程的各种相关状态信息，该目录下的信息很难读懂，所以就有了如下很多进程查看工具，帮我们在该目录下抽取出相关信息，予以显示
+
+```
+[root@localhost ~]# ls /proc
+1      14  26   296  46   478    63     732    74666  778  818        cmdline      fs          kpageflags  pagetypeinfo  sysrq-trigger
+10     16  277  3    469  479    686    733    748    8    826        consoles     interrupts  loadavg     partitions    sysvipc
+11     18  278  33   47   48     7      734    749    801  856        cpuinfo      iomem       locks       sched_debug   timer_list
+12     19  279  34   470  480    727    741    750    803  9          crypto       ioports     mdstat      schedstat     timer_stats
+12224  2   280  35   471  5      72712  742    751    806  914        devices      irq         meminfo     scsi          tty
+12225  20  281  36   472  50     72719  74348  752    808  96         diskstats    kallsyms    misc        self          uptime
+12226  21  284  44   473  556    72721  74605  753    809  acpi       dma          kcore       modules     slabinfo      version
+12437  22  286  445  474  57092  728    74632  754    811  asound     driver       keys        mounts      softirqs      vmallocinfo
+12443  23  293  446  475  574    729    74638  755    812  buddyinfo  execdomains  key-users   mpt         stat          vmstat
+12680  24  294  456  476  589    730    74639  756    813  bus        fb           kmsg        mtrr        swaps         zoneinfo
+13     25  295  457  477  614    731    74642  757    814  cgroups    filesystems  kpagecount  net         sys
+```
+
+以上是笔者liux系统中的/proc目录下的内容，可以看到，有许多纯数字命名的目录，每一个目录，代表一个进程，该目录下，有该进程的一系列状态信息，我们看一眼
+
+```
+[root@localhost ~]# ls /proc/74642/
+ls: 无法读取符号链接/proc/74642/exe: 没有那个文件或目录
+attr        cmdline          environ  io         mem         ns             pagemap      sched      stack    task
+autogroup   comm             exe      limits     mountinfo   numa_maps      patch_state  schedstat  stat     timers
+auxv        coredump_filter  fd       loginuid   mounts      oom_adj        personality  sessionid  statm    uid_map
+cgroup      cpuset           fdinfo   map_files  mountstats  oom_score      projid_map   setgroups  status   wchan
+clear_refs  cwd              gid_map  maps       net         oom_score_adj  root         smaps      syscall
+```
+
+该目录下的信息，想要完全读懂，还是有一定难度的，我就不一一解释了，只要知道，每个进程的所有状态信息，内核都以这种文件格式输出信息，供用户查看。
+
+而在/proc/sys目录下，有许多可调整的内核参数，常见的有
+
+> /proc/sys/net/core/rmem_max： 指定TCP连接的最大接受缓冲（窗口），单位字节。
+>
+> /proc/sys/net/core/wmem_max：指定TCP练级的的最大发送缓冲（窗口），单位字节。
+>
+> /proc/sys/net/core/rmem_default：默认的接受窗口大小。
+>
+> /proc/sys/net/core/wmen_default：默认的发送窗口大小。
+>
+> /proc/sys/net/ipv4/ip_local_port_range：用于设定向外连接的端口范围。
+>
+> /proc/sys/net/ipv4/tcp_max_syn_backlog：用于设定SYN报文的队列长度
+>
+> 
+>
+> 
+
 #### pstree命令：以树状结构显示运行中的进程
 
 基本没什么复杂用法
 
 #### ps命令
-
-  > 内核通过/proc/ 目录，将内核的状态信息输出给用户，其中包含两种参数
-  > 内核参数：可设置其值从而调整内核运行特性的参数：可设置的位于/proc/sys/目录下（拥有写权限的才能修改）
-  > 状态变量：其用于输出内核中统计信息或状态信息，仅用于查看
-  >
-  > 为了统一linux一切接文件的哲学思想，各参数都被模拟成文件系统乐行，参数本身被模拟成文件，位置被模拟成路径，或者说目录！
-  >
-  > 每个进程在/proc目录下，都有一个以pid同名的目录，该目录中存放了该进程的各种相关状态信息，该目录下的信息很难读懂，所以就有了很多进程查看工具，帮我们在该目录下抽取出相关信息，予以显示
-
-  
 
   查看执行ps命令这一刻的所有进程状态
 
@@ -593,10 +638,27 @@ kill [-s signal|-SIGNAL] pid
 
 常用信号：
 1）SIGHUP：无需关闭进程而让其重读配置文件
+
 2）SIGINT：终止正在运行的进程，相当于ctrl+c
-9）SIGKILL：强行杀死运行中的进程
-15）SIGTERM：终止运行中的进程
-18）SIGCONT：继续
+
+3）SIGQUIT：该信号，我在对ping进程实验时，发现每发送一次型号，该进程并不会结束，而是显示一次统计数据，而后继续运行
+
+```
+64 bytes from 172.16.0.104: icmp_seq=57 ttl=128 time=0.180 ms
+57/57 packets, 0% loss, min/avg/ewma/max = 0.167/0.238/0.197/0.766 ms
+64 bytes from 172.16.0.104: icmp_seq=58 ttl=128 time=0.312 ms
+```
+
+
+
+9）SIGKILL：强行杀死运行中的进程,立即生效
+
+15）SIGTERM：终止运行中的进程，和SIGKILL不同的是，它允许进程处理好后事，正常退出
+
+18）SIGCONT：调度后台被暂停的进程继续运行
+
+19）SIGSTOP：暂停进程，送往后台
+
 19）SIGSTOP：停止进程，送往后台
 
 #### killall命令
