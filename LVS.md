@@ -72,9 +72,9 @@ lvs-fulinat：修改请求报文的源ip和目标ip
 >
 > 注意，该来兴，默认不支持，是作者后来开发出来的，想使用，需要自行编译内核，添加其功能
 
-## LVS的调度方法
+## LVS的调度算法
 
-### 静态调度方法
+### 静态调度算法
 
 * RR：RoundRobin：轮询调度，顾名思义，轮询
 
@@ -82,7 +82,7 @@ lvs-fulinat：修改请求报文的源ip和目标ip
 * SH：Source Hashing：源地址ip hash，将源地址计算出hash值，保存于内存中，作为键值，一个ip请求过后，保存下来hash值后，随后的访问，都将被调度到第一次到来是别调度的服务器上，这样做的缺点是，当下并不是每个客户端都有独立的公网ip地址，很多客户端都是共享同一个公网ip地址的，so...
 * DH：Destination Hashing：目标地址ip hash，和SH恰好想法，保存目标地址，通常用于正向代理服务器的负载均衡器上，将请求同一个ip的请求，调度到一台服务器，以提高缓存命中率。
 
-### 动态调度方法、
+### 动态调度算法
 
 主要根据每个rs当前的负载状态及结合调度算法进行调度
 
@@ -103,4 +103,82 @@ lvs-fulinat：修改请求报文的源ip和目标ip
 * LBLC：基于局部性的最小连接
 
 * LBLCR：带复制的基于局部性的最下连接
+
+# LVS构建
+
+安装ipvsadm程序包；
+
+ipvsadm命令
+
+## 管理集群服务：增、删、改
+
+* 增、改
+
+  ipvsadm -A|E -t|u|f serveice-address [-s scheduler] [-p [timeout]]
+
+* 删
+
+  ipvsadm -D -t|u|f service-address
+
+* 其中，service-address表示VS的ip地址VIP：
+
+  -t|u|f：
+
+  -t：tcp协议的端口，VIP:TCP_PORT
+
+  -u：udp协议的端口
+
+  -f：firewall MARK， 防火墙标记，是一个数字，以后再介绍
+
+  [-s scheduler]：指定集群的调度算法，默认为wlc
+
+## 管理集群上的RS： 增、改、删
+
+* 增、该：
+
+  ipvsadm -a|e -t|u|f service-address -r server-address [-g|i|m] [-w weight]
+
+  lvs类型
+
+  >  -g：gateway，dr类型
+  >
+  > -i：ipip，tun类型
+  >
+  > -m：masquerade，nat类型
+
+  -w weight：权重
+
+* 删
+
+  ipvsadm -d -t|u|f service-address -r server-address
+
+* 其中 server-address 表示RIP，格式 rip[:port]，如非必要，不要写端口，以免写错
+
+清空定义的所有内容：ipvsadm -C
+
+## 查看：
+
+ipvsadm -L|l [options]
+
+常用选项：
+
+> --numeric, -n :数字格式显示
+>
+> --exact：精确显示计数器的值
+>
+> --stats：统计数据
+>
+> --rate：速率数据
+>
+> --connection,-c： 显示连接数
+
+规则保存和重载：
+
+ipvsadm -S 或者ipvsadm-save
+
+> ipvsadm -S -n > /etc/sysconfig/ipvsadm
+>
+> systemctl stop ipvsadm.service停止时，也会自动保存至上面文件中
+
+ipvsadm -R 或者 ipvsadm-restore
 
