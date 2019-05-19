@@ -12,7 +12,7 @@
 
 1. 为一台CentOS-6虚拟机 添加两块网卡，模拟VS，一块为桥接模式，一块为仅主机模式，桥接模式的网卡地址设置为172.16.0.100，仅主机模式的网卡地址设置为192.168.105.100
 
-   ![插图14-2](https://github.com/huangtianfeng/pictures/blob/master/linux%E5%9B%BE%E5%BA%93/%E6%8F%92%E5%9B%BE14-1.png)
+   ![插图14-2](https://github.com/huangtianfeng/pictures/blob/master/linux%E5%9B%BE%E5%BA%93/%E6%8F%92%E5%9B%BE14-2.png)
 
    忘了我的172.16.0.100地址已经被占用，这里为了方便，VIP 改为了172.16.0.200。
 
