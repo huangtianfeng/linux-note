@@ -2,7 +2,7 @@
 
 1. 准备拓扑图
 
-![插图14-1](F:\Users\tian\Pictures\linux图库\插图14-1.png)
+![插图14-1](https://github.com/huangtianfeng/pictures/blob/master/linux%E5%9B%BE%E5%BA%93/%E6%8F%92%E5%9B%BE14-1.png)
 
 之所以用105这个网段，是因为WMware的仅主机模式连接的虚拟DHCP服务器的默认分配的地址是该网段，所以，笔者也就懒得改了
 
@@ -12,7 +12,7 @@
 
 1. 为一台CentOS-6虚拟机 添加两块网卡，模拟VS，一块为桥接模式，一块为仅主机模式，桥接模式的网卡地址设置为172.16.0.100，仅主机模式的网卡地址设置为192.168.105.100
 
-   ![插图14-2](F:\Users\tian\Pictures\linux图库\插图14-2.png)
+   ![插图14-2](https://github.com/huangtianfeng/pictures/blob/master/linux%E5%9B%BE%E5%BA%93/%E6%8F%92%E5%9B%BE14-1.png)
 
    忘了我的172.16.0.100地址已经被占用，这里为了方便，VIP 改为了172.16.0.200。
 
