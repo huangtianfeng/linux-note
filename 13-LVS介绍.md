@@ -47,9 +47,9 @@ lvs-dr：通过为请求报文重新封装一个MAC首部进行转发，源MAC�
 >
 > * arp_announce：限制通告级别：
 >
-> arp_announce=1：尽量避免向非直接连接网络进行通告4
+> arp_announce=1：尽量避免向非直接连接网络进行通告
 
-> arp_announce=2：必须避免像非本地网络通告
+> arp_announce=2：必须避免向非直接连接的网络进行通告
 >
 > arp_announce=0： 默认值，表示吧本机上的所有接口的所有信息向每个接口上的网络进行通告
 >
@@ -57,13 +57,13 @@ lvs-dr：通过为请求报文重新封装一个MAC首部进行转发，源MAC�
 >
 > arp_ignore=0：默认值，表示可以使用本地任意接口上配置的任意地址进行响应
 >
-> arp_ignore=1：仅在请求的目标ip配置在本地主机的接收到请求报文接口上是，才给与响应；
+> arp_ignore=1：仅在请求的目标ip配置在本地主机的接收到请求报文接口上时，才给与响应；
 
 > 2. RS的DIP可以是公网地址，也可以是私网地址，使用公网地址时，需要保证RIP和DIP在同一网络中；
 >
 > 3. RS的网关不能指向VS，以确保响应报文不会再经过Director；
 >
-> 4. RS和Director必须在同一个物理网络，不能经过路由器，应为是基于mac地址调度，经过路由器，mac地址就会被修改；
+> 4. RS和Director必须在同一个物理网络，不能经过路由器，因为是基于mac地址调度，经过路由器，mac地址就会被修改；
 >
 > 5. 因为响应高报文不经过Director，所以不支持端口映射；
 
@@ -102,13 +102,13 @@ lvs-fulinat：修改请求报文的源ip和目标ip
 
 主要根据每个rs当前的负载状态及结合调度算法进行调度
 
-* LC：Leash Connection：最少连接调度
+* LC：Least Connection：最少连接调度
 
   很简单，把新连接调度至当前连接数最少的rs上
 
   通过active\*256+inactive 计算出rs的连接数，优先调度给该值最小的rs（之所以将活动连接\*256，是为了将inactive的比重降低，甚至忽略不计）
 
-* WLC：Weight  Leash Connection：加权最少连接调度
+* WLC：Weight  Least Connection：加权最少连接调度
 
   在前面的基础上，为每个服务器加权，通过(active*256+inactive)/weight 计算出值，有限调度给值最小的rs，从算法可以看出，权值越大，结果将越小，也就越加优先被调度
 
@@ -120,7 +120,7 @@ lvs-fulinat：修改请求报文的源ip和目标ip
 
 * LBLCR：带复制的基于局部性的最下连接
 
-# LVS构建
+# ipvsadm工具的使用
 
 安装ipvsadm程序包；
 

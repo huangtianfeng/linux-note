@@ -1,6 +1,8 @@
 [TOC]
 
-# NGINX
+
+
+# NGINX介绍
 
 是一个master/worker模型，由主进程生成子进程，子进程负责响应用户请求
 
@@ -55,7 +57,7 @@ nginx的公用：
 3. http/https协议的反向代理
 4. imap4/pop3
 
-## nginx的安装
+# nginx的安装
 
 * 创建nginx的yum仓库，指向nginx的官网仓库，然后安装
 
@@ -146,11 +148,11 @@ server{...}:每个server用于定义一个虚拟主机；
 
 
 
-# 配置指令
+## 配置指令
 
-## main配置段常见的配置指令
+### main配置段常见的配置指令
 
-### 正常运行必备的配置：
+#### 正常运行必备的配置：
 
 1. user：定义以谁的身份运行进程
    语法：user USER [GROUP]
@@ -167,7 +169,7 @@ server{...}:每个server用于定义一个虚拟主机；
 
    指明要装载的动态模块
 
-### 性能优化相关的配置
+#### 性能优化相关的配置
 
 1. worker_processes number | auto；
 
@@ -207,7 +209,7 @@ server{...}:每个server用于定义一个虚拟主机；
 
    所有worker进程所能打开的文件数量上限；其值应该大于worker_processes和events中 worker_connections两者的乘积
 
-### 调试，定位问题的配置
+#### 调试，定位问题的配置
 
 1. daemon on | off
 
@@ -221,7 +223,7 @@ server{...}:每个server用于定义一个虚拟主机；
 
    指明日志位置，不是使用rsyslog管理的！
 
-### 事件驱动相关的配置，也属于全局配置段
+事件驱动相关的配置，也属于全局配置段
 
 events{...}
 
@@ -241,9 +243,9 @@ events{...}
 
    处理新的链接请求的方法；on以为这由各worker轮流处理新请求，off意味着每个新请求的到达都会通知所有worker进程
 
-## http 协议的相关配置：
+### http 协议的相关配置：
 
-### 与套接字相关的配置
+#### 与套接字相关的配置
 
 1. server{...}
 
@@ -306,7 +308,7 @@ events{...}
 
 9. sendfile on|off；是否启用sendfile
 
-### 定义路径相关的配置
+#### 定义路径相关的配置
 
 1. root path；
 
@@ -358,7 +360,7 @@ events{...}
 
    当用户访问一个状态码为404，不存在的页面时，nginx会将状态码改为200，并显示/notfound.html资源，后面的location定义了，当访问这个资源的时候，将根映射为另外一个用于保存自定义错误页面的路径，而不是去正常的资源路径下去找该错误页面！
 
-### 定义客户端请求的相关配置
+#### 定义客户端请求的相关配置
 
 1. **keepalive_timeout timeout[header_timeout];**
 
@@ -398,7 +400,7 @@ events{...}
 
    而后根据报文的body部分的hash值，将其对应存储到三级目录中
 
-### 对客户端进行限制的相关配置
+#### 对客户端进行限制的相关配置
 
 1. limit_rate rate;
 
@@ -418,7 +420,7 @@ events{...}
 
    }
 
-### 文件操作优化的配置
+#### 文件操作优化的配置
 
 1. aio on | off | threads[=pool];
 
@@ -456,9 +458,9 @@ events{...}
 
    是否缓存查找时发生错误的文件一类的信息；类似于DNS的缓存否定答案
 
-## 各常见模块配置
+### 各常见模块配置
 
-### ngx_http_access_module模块
+#### ngx_http_access_module模块
 
 实现基于ip地址的访问控制功能
 
@@ -467,7 +469,7 @@ events{...}
 
 可在http，server，location，limit_except上下文中使用
 
-### ngx_http_auth_basic_module模块
+#### ngx_http_auth_basic_module模块
 
 实现基于用户的访问控制，使用basic机制进行用户认证
 
@@ -487,7 +489,7 @@ events{...}
 
    注意：htpasswd命令有httpd-tools包提供
 
-### ngx_http_stub_status_module模块
+#### ngx_http_stub_status_module模块
 
 用于输出nginx的基本状态信息；
 
@@ -513,7 +515,7 @@ events{...}
 >
 > Waiting：处于等待客户端发出请求的空闲连接数；
 
-### ngx_http_log_module模块
+#### ngx_http_log_module模块
 
 定义日志格式
 
@@ -541,7 +543,7 @@ events{...}
 
    valid：验证缓存中各缓存项是否为活动项的时间间隔；
 
-### ngx_http_ssl_module模块
+#### ngx_http_ssl_module模块
 
 1. ssl on | off；激活https 协议
 
@@ -581,7 +583,7 @@ server{
 }
 ```
 
-### ngx_http_rewrite_module模块
+#### ngx_http_rewrite_module模块
 
 url（重写）重定向；本质上就是查找替换，将用户请求的URL基于regex所描述的模式进行匹配检查，而后完成替换；
 
@@ -687,5 +689,5 @@ url（重写）重定向；本质上就是查找替换，将用户请求的URL�
       }
       ```
 
-return还可以返回一个url，返回一个主页，或者指定图片等
+return还可以返回一个url，返回一个主页，或者指定图片资源等
 
