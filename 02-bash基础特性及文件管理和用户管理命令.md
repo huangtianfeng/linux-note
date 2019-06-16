@@ -102,7 +102,7 @@
 
   在同一个目录下，移动文件即重命名
 
-  用法和cp命令基本一致，不过移动目录的时候可以不用加-r选项，直接激动即可
+  用法和cp命令基本一致，不过移动目录的时候可以不用加-r选项，直接移动即可
 
 * install命令：复制文件
 
@@ -379,9 +379,9 @@ linux是一个多用户的操作系统，顾名思义，linux允许同一个系�
 
   1. /etc/passwd文件内容
 
-     > root​ ​:x :​0:0:root:/root:/bin/bash
+     > root​ :x :0:0:root:/root:/bin/bash
      >
-     > tian​:x :​1000:1000:tian:/home/tian:/bin/bash
+     > tian:x :1000:1000:tian:/home/tian:/bin/bash
 
      该文件以冒号为分隔符，分为七个字段，他们代表的意义分别是：
 
@@ -411,7 +411,7 @@ linux是一个多用户的操作系统，顾名思义，linux允许同一个系�
 
 * /etc/group
 
-  > bin:x :​1:bin,daemon
+  > bin:x :1:bin,daemon
   >
   > 组名：密码：组id：组成员列表
 
