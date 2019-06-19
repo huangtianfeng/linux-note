@@ -177,11 +177,11 @@ mkdir: 已创建目录 "./roles/zabbix-agent/handlers"
 2. 设置执行动作：将扫描到的主机添加进监控，并链接至内置模板OS linux
 ![插图24-2](https://github.com/huangtianfeng/pictures/blob/master/linux%E5%9B%BE%E5%BA%93/%E6%8F%92%E5%9B%BE24-2.png)
 ![插图24-3](https://github.com/huangtianfeng/pictures/blob/master/linux%E5%9B%BE%E5%BA%93/%E6%8F%92%E5%9B%BE24-3.png)
-![插图24-4](en-resource://database/1750:0)
+![插图24-4](https://github.com/huangtianfeng/pictures/blob/master/linux%E5%9B%BE%E5%BA%93/%E6%8F%92%E5%9B%BE24-4.png)
 4. 启动发现功能并检查
-![插图24-5](en-resource://database/1752:0)
+![插图24-5](https://github.com/huangtianfeng/pictures/blob/master/linux%E5%9B%BE%E5%BA%93/%E6%8F%92%E5%9B%BE24-5.png)
 
-![插图24-6](en-resource://database/1754:0)
+![插图24-6](https://github.com/huangtianfeng/pictures/blob/master/linux%E5%9B%BE%E5%BA%93/%E6%8F%92%E5%9B%BE24-6.png)
 可以看到，所有主机均已被监控
 
 项目完成
