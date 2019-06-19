@@ -173,10 +173,10 @@ mkdir: 已创建目录 "./roles/zabbix-agent/handlers"
 
 ## 通过discovery功能，配置监控主机
 1. 设置发现规则：通过ssh端口扫描发现主机
-![插图24-1](en-resource://database/1744:0)
+![插图24-1](https://github.com/huangtianfeng/pictures/blob/master/linux%E5%9B%BE%E5%BA%93/%E6%8F%92%E5%9B%BE24-1.png)
 2. 设置执行动作：将扫描到的主机添加进监控，并链接至内置模板OS linux
-![插图24-2](en-resource://database/1746:0)
-![插图24-3](en-resource://database/1748:0)
+![插图24-2](https://github.com/huangtianfeng/pictures/blob/master/linux%E5%9B%BE%E5%BA%93/%E6%8F%92%E5%9B%BE24-2.png)
+![插图24-3](https://github.com/huangtianfeng/pictures/blob/master/linux%E5%9B%BE%E5%BA%93/%E6%8F%92%E5%9B%BE24-3.png)
 ![插图24-4](en-resource://database/1750:0)
 4. 启动发现功能并检查
 ![插图24-5](en-resource://database/1752:0)
