@@ -244,7 +244,7 @@ MariaDB [(none)]> SHOW DATABASES
 
 ```
 
-注意，笔者在这里输入完服务端命令后，老师忘记加分号，所以，出现了以上情况！ 回车后，换行等待继续输入。
+注意，笔者在这里输入完服务端命令后，老是忘记加分号，所以，出现了以上情况！ 回车后，换行等待继续输入。
 
 其实这里的数据库，就是/var/lib/mysql路径下的一个目录！我们来看一眼
 
@@ -332,15 +332,17 @@ _ 表示匹配单个任意字符
 
     > 1. 精确数值型
     >
-    >    INT：整形数值
+    > INT：整形数值
     >
-    >    INT的五个变种：TINYINT、SMALLINT、MEDIUMINT、INT、LONGINT
+    > INT的五个变种：TINYINT、SMALLINT、MEDIUMINT、INT、LONGINT
+    >
+    > 分别占1，2，3，4，8字节
     >
     > 2. 近似数值型（浮点型）
     >
-    >    FLOAT：单精度浮点型
+    > FLOAT：单精度浮点型
     >
-    >    DOUBLE：双精度浮点型
+    > DOUBLE：双精度浮点型
 
 * 日期时间型：
 
@@ -407,7 +409,7 @@ _ 表示匹配单个任意字符
 >
 > 字段定义，就是由上面所介绍的数据类型，以及修饰符所构成！
 >
-> 这里只介绍其简单用法，后面的table_options partition_options 可自行查看帮助也了解！
+> 这里只介绍其简单用法，后面的table_options partition_options 可自行查看帮助了解！
 >
 > 主键，唯一键，外键，索引等，也可以使用如下格式，在括号中单独指定
 >
@@ -664,7 +666,7 @@ MariaDB [tian]> SHOW INDEX IN grade;
 
 DROP [ONLINE|OFFLINE] INDEX index_name ON tbl_name
 
-这个就太简单了吧： 示例，将前面创建的名为suoyin的索引，删除：
+ 示例，将前面创建的名为suoyin的索引，删除：
 
 ```mysql
 MariaDB [tian]> DROP INDEX suoyin ON grade;
